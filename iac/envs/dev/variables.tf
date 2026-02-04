@@ -27,3 +27,8 @@ variable "enable_nat" {
   type    = bool
   default = true
 }
+
+variable "name_prefix" {
+  description = "Prefix used for naming AWS resources"
+  type        = string
+}
