@@ -4,6 +4,11 @@ Thumbs.db
 
 # Node
 node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Production build
+frontend/build/
 
 # Terraform
 .terraform/
@@ -23,3 +28,7 @@ crash.log
 # IDE
 .vscode/
 .idea/
+
+# Logs
+*.log
+npm-debug.log*
