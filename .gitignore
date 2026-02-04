@@ -1,0 +1,25 @@
+# Local / OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+crash.log
+
+# Secrets / envs
+.env
+.env.local
+.env.*.local
+*.pem
+*.ppk
+*.csv
+
+# IDE
+.vscode/
+.idea/
