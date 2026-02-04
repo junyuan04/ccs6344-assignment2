@@ -1,55 +1,43 @@
-
 terraform {
-
   required_providers {
-
-    aws = {
-
-      source  = "hashicorp/aws"
-
-      version = "~> 5.0"
-
-    }
-
+    aws    = { source = "hashicorp/aws", version = "~> 5.0" }
+    random = { source = "hashicorp/random", version = "~> 3.0" }
   }
-
 }
 
-provider "aws" {
-
-  region = var.region
-
-}
-
-# call network module
+provider "aws" { region = var.region }
 
 module "network" {
-
   source               = "../../modules/network"
-
   vpc_cidr             = var.vpc_cidr
-
   azs                  = var.azs
-
   public_subnet_cidrs  = var.public_subnet_cidrs
-
   private_subnet_cidrs = var.private_subnet_cidrs
-
   enable_nat           = var.enable_nat
-
 }
-
-# call security module
 
 module "security" {
-
   source = "../../modules/security"
-
   vpc_id = module.network.vpc_id
-
 }
 
-# other modules will consume outputs from network/security
+module "kms_secrets" {
+  source      = "../../modules/kms_secrets"
+  name_prefix = "assignment2"
+}
 
-# compute/edge modules here later
-
+module "database" {
+  source             = "../../modules/database"
+  engine             = "postgres"
+  engine_version     = "13.7"
+  instance_class     = "db.t3.micro"
+  allocated_storage  = 20
+  db_name            = "electricitybilling"
+  db_username        = "dbadmin"
+  vpc_id             = module.network.vpc_id
+  private_subnet_ids = module.network.private_subnets
+  db_sg_id           = module.security.db_sg_id
+  kms_key_id         = module.kms_secrets.kms_key_id
+  master_password    = module.kms_secrets.db_master_password
+  multi_az           = false
+}
