@@ -50,10 +50,10 @@ module "edge" {
   public_subnets = module.network.public_subnets
   alb_sg_id      = module.security.alb_sg_id
 
-  target_port        = 5000
-  health_check_path  = "/api/health"
+  target_port       = 5000
+  health_check_path = "/api/health"
 
-  enable_https   = false
+  enable_https    = false
   certificate_arn = ""
 }
 
