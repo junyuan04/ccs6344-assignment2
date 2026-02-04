@@ -1,0 +1,130 @@
+ccs6344-assignment2/
+├─ Database-Assignment1-Backend-master/
+│  └─ Database-Assignment1-Backend-master/
+│     ├─ src/
+│     │  ├─ config/
+│     │  │  └─ db.js
+│     │  ├─ controllers/
+│     │  │  ├─ adminsController.js
+│     │  │  ├─ auditLogsController.js
+│     │  │  ├─ authController.js
+│     │  │  ├─ billsController.js
+│     │  │  ├─ customersController.js
+│     │  │  ├─ feedbacksController.js
+│     │  │  ├─ profilesController.js
+│     │  │  ├─ staffsController.js
+│     │  │  ├─ tariffsController.js
+│     │  │  └─ usersController.js
+│     │  ├─ middleware/
+│     │  │  ├─ auth.js
+│     │  │  ├─ errorHandler.js
+│     │  │  └─ roleCheck.js
+│     │  ├─ routes/
+│     │  │  ├─ admins.js
+│     │  │  ├─ auditLogs.js
+│     │  │  ├─ auth.js
+│     │  │  ├─ bills.js
+│     │  │  ├─ customers.js
+│     │  │  ├─ feedbacks.js
+│     │  │  ├─ profiles.js
+│     │  │  ├─ staffs.js
+│     │  │  ├─ tariffs.js
+│     │  │  └─ users.js
+│     │  ├─ services/
+│     │  │  ├─ adminsService.js
+│     │  │  ├─ auditService.js
+│     │  │  ├─ authService.js
+│     │  │  ├─ billsService.js
+│     │  │  ├─ customersService.js
+│     │  │  ├─ feedbacksService.js
+│     │  │  ├─ profilesService.js
+│     │  │  ├─ staffsService.js
+│     │  │  ├─ tariffsService.js
+│     │  │  └─ usersService.js
+│     │  └─ server.js
+│     ├─ .env.example
+│     ├─ .gitignore
+│     ├─ package-lock.json
+│     └─ package.json
+├─ Database-Assignment1-Frontend-master/
+│  └─ Database-Assignment1-Frontend-master/
+│     ├─ public/
+│     │  ├─ favicon.ico
+│     │  ├─ index.html
+│     │  ├─ logo192.png
+│     │  ├─ logo512.png
+│     │  ├─ manifest.json
+│     │  └─ robots.txt
+│     ├─ src/
+│     │  ├─ components/
+│     │  │  ├─ Admin/
+│     │  │  │  └─ AdminDashboard.jsx
+│     │  │  ├─ Common/
+│     │  │  │  ├─ Login.jsx
+│     │  │  │  └─ Register.jsx
+│     │  │  ├─ Customer/
+│     │  │  │  ├─ CustomerDashboard.jsx
+│     │  │  │  └─ Profile.jsx
+│     │  │  └─ Staff/
+│     │  │     └─ StaffDashboard.jsx
+│     │  ├─ context/
+│     │  │  └─ AuthContext.jsx
+│     │  ├─ services/
+│     │  │  └─ api.js
+│     │  ├─ App.css
+│     │  ├─ App.jsx
+│     │  ├─ App.test.js
+│     │  ├─ index.css
+│     │  ├─ index.js
+│     │  ├─ logo.svg
+│     │  ├─ reportWebVitals.js
+│     │  └─ setupTests.js
+│     ├─ .gitignore
+│     ├─ package-lock.json
+│     ├─ package.json
+│     ├─ postcss.config.js
+│     ├─ README.md
+│     └─ tailwind.config.js
+├─ docs/
+│  └─ architecture.png
+├─ iac/
+│  ├─ envs/
+│  │  └─ dev/
+│  │     ├─ main.tf
+│  │     ├─ plan.tfplan
+│  │     ├─ terraform.tfvars
+│  │     └─ variables.tf
+│  └─ modules/
+│     ├─ compute/
+│     │  ├─ main.tf
+│     │  ├─ outputs.tf
+│     │  └─ variables.tf
+│     ├─ database/
+│     │  ├─ main.tf
+│     │  ├─ outputs.tf
+│     │  └─ variables.tf
+│     ├─ edge/
+│     │  ├─ main.tf
+│     │  ├─ outputs.tf
+│     │  └─ variables.tf
+│     ├─ kms_secrets/
+│     │  ├─ main.tf
+│     │  └─ variables.tf
+│     ├─ network/
+│     │  ├─ main.tf
+│     │  ├─ outputs.tf
+│     │  └─ variables.tf
+│     ├─ observability/
+│     │  ├─ main.tf
+│     │  ├─ outputs.tf
+│     │  └─ variables.tf
+│     ├─ security/
+│     │  ├─ main.tf
+│     │  ├─ outputs.tf
+│     │  └─ variables.tf
+│     └─ waf/
+│        ├─ main.tf
+│        ├─ outputs.tf
+│        └─ variables.tf
+├─ .gitignore
+└─ README.md
