@@ -16,6 +16,9 @@ frontend/build/
 *.tfstate.*
 .terraform.lock.hcl
 crash.log
+terraform.tfstate
+terraform.tfstate.backup
+*.tfplan
 
 # Secrets / envs
 .env
