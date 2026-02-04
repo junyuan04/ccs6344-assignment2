@@ -41,3 +41,18 @@ module "database" {
   master_password    = module.kms_secrets.db_master_password
   multi_az           = false
 }
+
+module "edge" {
+  source = "../../modules/edge"
+
+  name_prefix    = var.name_prefix
+  vpc_id         = module.network.vpc_id
+  public_subnets = module.network.public_subnets
+  alb_sg_id      = module.security.alb_sg_id
+
+  target_port        = 5000
+  health_check_path  = "/api/health"
+
+  enable_https   = false
+  certificate_arn = ""
+}
