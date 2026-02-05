@@ -112,6 +112,9 @@ output "db_sg_id" { value = module.security.db_sg_id }
 output "rds_endpoint" { value = aws_db_instance.postgres.endpoint }
 output "rds_address" { value = aws_db_instance.postgres.address }
 output "rds_port" { value = aws_db_instance.postgres.port }
+output "alb_dns_name" { value = module.edge.alb_dns_name }
+output "alb_arn"      { value = module.edge.alb_arn }
+output "target_group_arn" { value = module.edge.target_group_arn }
 
 # SSM Parameter names (for Person B to use)
 output "db_username_param" { value = module.ssm_params.db_username_param }
