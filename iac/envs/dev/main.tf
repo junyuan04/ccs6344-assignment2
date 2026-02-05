@@ -83,18 +83,18 @@ module "edge" {
 }
 
 module "compute" {
-  source          = "../../modules/compute"
+  source = "../../modules/compute"
 
-  name_prefix     = "assignment2"
-  public_subnets  = module.network.public_subnets
-  app_sg_id       = module.security.app_sg_id
+  name_prefix      = "assignment2"
+  public_subnets   = module.network.public_subnets
+  app_sg_id        = module.security.app_sg_id
   target_group_arn = module.edge.target_group_arn
 
-  backend_dir     = "Database-Assignment1-Backend-master/Database-Assignment1-Backend-master"
+  backend_dir = "Database-Assignment1-Backend-master/Database-Assignment1-Backend-master"
 
-  app_port        = 5000
+  app_port = 5000
 
-  key_name        = ""
+  key_name = ""
 }
 
 module "observability" {
