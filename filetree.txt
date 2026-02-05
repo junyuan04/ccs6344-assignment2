@@ -86,7 +86,8 @@ ccs6344-assignment2/
 │     ├─ README.md
 │     └─ tailwind.config.js
 ├─ docs/
-│  └─ architecture.png
+│  ├─ architecture.png
+│  └─ PERSON_A_REPORT_SECTION.md
 ├─ iac/
 │  ├─ envs/
 │  │  └─ dev/
@@ -103,12 +104,13 @@ ccs6344-assignment2/
 │     │  ├─ main.tf
 │     │  ├─ outputs.tf
 │     │  └─ variables.tf
-│     ├─ edge/
+│     ├─ database_ec2/
 │     │  ├─ main.tf
 │     │  ├─ outputs.tf
 │     │  └─ variables.tf
-│     ├─ kms_secrets/
+│     ├─ edge/
 │     │  ├─ main.tf
+│     │  ├─ outputs.tf
 │     │  └─ variables.tf
 │     ├─ network/
 │     │  ├─ main.tf
@@ -122,9 +124,17 @@ ccs6344-assignment2/
 │     │  ├─ main.tf
 │     │  ├─ outputs.tf
 │     │  └─ variables.tf
+│     ├─ ssm_params/
+│     │  ├─ main.tf
+│     │  ├─ outputs.tf
+│     │  └─ variables.tf
 │     └─ waf/
 │        ├─ main.tf
 │        ├─ outputs.tf
 │        └─ variables.tf
+├─ outputs/
+│  ├─ PERSON_B_INTEGRATION_GUIDE.md
+│  └─ person-a-outputs.json
 ├─ .gitignore
+├─ filetree.txt
 └─ README.md
