@@ -8,28 +8,28 @@ data "aws_ami" "al2023" {
   }
 }
 
-resource "aws_iam_role" "ec2_role" {
-  name = "${var.name_prefix}-ec2-role"
+#resource "aws_iam_role" "ec2_role" {
+#  name = "${var.name_prefix}-ec2-role"
+#
+#  assume_role_policy = jsonencode({
+#    Version = "2012-10-17",
+#    Statement = [{
+#      Effect = "Allow",
+#      Principal = { Service = "ec2.amazonaws.com" },
+#      Action = "sts:AssumeRole"
+#    }]
+#  })
+#}
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = { Service = "ec2.amazonaws.com" },
-      Action = "sts:AssumeRole"
-    }]
-  })
-}
+#resource "aws_iam_role_policy_attachment" "ssm" {
+#  role       = aws_iam_role.ec2_role.name
+#  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+#}
 
-resource "aws_iam_role_policy_attachment" "ssm" {
-  role       = aws_iam_role.ec2_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
-
-resource "aws_iam_instance_profile" "profile" {
-  name = "${var.name_prefix}-ec2-profile"
-  role = aws_iam_role.ec2_role.name
-}
+#resource "aws_iam_instance_profile" "profile" {
+# name = "${var.name_prefix}-ec2-profile"
+#  role = aws_iam_role.ec2_role.name
+#}
 
 resource "aws_instance" "app" {
   ami                    = data.aws_ami.al2023.id
@@ -37,9 +37,9 @@ resource "aws_instance" "app" {
   subnet_id              = var.public_subnets[0]
   vpc_security_group_ids = [var.app_sg_id]
 
-  iam_instance_profile = aws_iam_instance_profile.profile.name
+#  iam_instance_profile = aws_iam_instance_profile.profile.name
 
-  # 可选 keypair
+
   key_name = var.key_name != "" ? var.key_name : null
 
   user_data = <<-EOF
