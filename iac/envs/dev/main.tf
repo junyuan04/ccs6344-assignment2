@@ -74,6 +74,34 @@ module "ssm_params" {
   db_name     = "appdb"
 }
 
+module "edge" {
+  source         = "../../modules/edge"
+  vpc_id         = module.network.vpc_id
+  public_subnets = module.network.public_subnets
+  alb_sg_id      = module.security.alb_sg_id
+}
+
+module "compute" {
+  source          = "../../modules/compute"
+  vpc_id          = module.network.vpc_id
+  private_subnets = module.network.private_subnets
+  app_sg_id       = module.security.app_sg_id
+
+  target_group_arn = module.edge.target_group_arn
+}
+
+module "observability" {
+  source = "../../modules/observability"
+  alb_arn          = module.edge.alb_arn
+  target_group_arn = module.edge.target_group_arn
+}
+
+module "waf" {
+  source  = "../../modules/waf"
+  alb_arn = module.edge.alb_arn
+}
+
+
 # Outputs
 output "vpc_id" { value = module.network.vpc_id }
 output "public_subnets" { value = module.network.public_subnets }
