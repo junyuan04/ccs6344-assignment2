@@ -97,17 +97,17 @@ module "compute" {
   key_name = ""
 }
 
-module "observability" {
-  source         = "../../modules/observability"
-  name_prefix    = "assignment2"
-  alb_arn_suffix = module.edge.alb_arn_suffix
-}
+#module "observability" {
+#  source         = "../../modules/observability"
+#  name_prefix    = "assignment2"
+#  alb_arn_suffix = module.edge.alb_arn_suffix
+#}
 
-module "waf" {
-  source      = "../../modules/waf"
-  alb_arn     = module.edge.alb_arn
-  name_prefix = "assignment2"
-}
+#module "waf" {
+#  source      = "../../modules/waf"
+#  alb_arn     = module.edge.alb_arn
+#  name_prefix = "assignment2"
+#}
 
 
 # Outputs
