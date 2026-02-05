@@ -79,6 +79,7 @@ module "edge" {
   vpc_id         = module.network.vpc_id
   public_subnets = module.network.public_subnets
   alb_sg_id      = module.security.alb_sg_id
+  name_prefix = "assignment2"
 }
 
 module "compute" {
