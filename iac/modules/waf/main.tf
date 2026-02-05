@@ -1,12 +1,14 @@
 resource "aws_wafv2_web_acl" "this" {
-  name  = "${var.name_prefix}-web-acl"
+  name  = "assignment2-waf"
   scope = "REGIONAL"
 
-  default_action { allow {} }
+  default_action {
+    allow {}
+  }
 
   visibility_config {
     cloudwatch_metrics_enabled = true
-    metric_name                = "${var.name_prefix}-waf"
+    metric_name                = "assignment2-waf"
     sampled_requests_enabled   = true
   }
 
@@ -14,7 +16,9 @@ resource "aws_wafv2_web_acl" "this" {
     name     = "AWSManagedRulesCommonRuleSet"
     priority = 1
 
-    override_action { none {} }
+    override_action {
+      none {}
+    }
 
     statement {
       managed_rule_group_statement {
@@ -26,26 +30,6 @@ resource "aws_wafv2_web_acl" "this" {
     visibility_config {
       cloudwatch_metrics_enabled = true
       metric_name                = "common"
-      sampled_requests_enabled   = true
-    }
-  }
-
-  rule {
-    name     = "AWSManagedRulesSQLiRuleSet"
-    priority = 2
-
-    override_action { none {} }
-
-    statement {
-      managed_rule_group_statement {
-        name        = "AWSManagedRulesSQLiRuleSet"
-        vendor_name = "AWS"
-      }
-    }
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "sqli"
       sampled_requests_enabled   = true
     }
   }
