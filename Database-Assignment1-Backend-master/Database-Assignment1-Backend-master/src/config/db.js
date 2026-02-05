@@ -1,4 +1,4 @@
-const sql = require("mssql");
+const sql = require("pg");
 
 let pool; // Singleton pool instance
 

@@ -66,7 +66,7 @@ app.get("/api/health", async (req, res) => {
 
 app.get("/api/dbtest", async (req, res) => {
   try {
-    const result = await query("SELECT DB_NAME() AS dbname, GETDATE() AS now");
+    const result = await query("SELECT current_database() AS dbname, NOW() AS now");
     res.json(result.recordset[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
