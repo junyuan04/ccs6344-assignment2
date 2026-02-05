@@ -98,9 +98,9 @@ module "compute" {
 }
 
 module "observability" {
-  source           = "../../modules/observability"
-  alb_arn          = module.edge.alb_arn
-  target_group_arn = module.edge.target_group_arn
+  source         = "../../modules/observability"
+  name_prefix    = "assignment2"
+  alb_arn_suffix = module.edge.alb_arn_suffix
 }
 
 module "waf" {
