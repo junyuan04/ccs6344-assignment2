@@ -1,19 +1,25 @@
 terraform {
   required_providers {
-    aws    = { source = "hashicorp/aws", version = "~> 5.0" }
+    aws = { source = "hashicorp/aws", version = "~> 5.0" }
     random = { source = "hashicorp/random", version = "~> 3.0" }
   }
 }
 
 provider "aws" { region = var.region }
 
+resource "random_password" "sql_password" {
+  length  = 16
+  special = true
+  override_special = "!@#$%^&*()-_=+[]{}|:,.<>?"
+}
+
 module "network" {
-  source               = "../../modules/network"
-  vpc_cidr             = var.vpc_cidr
-  azs                  = var.azs
-  public_subnet_cidrs  = var.public_subnet_cidrs
+  source = "../../modules/network"
+  vpc_cidr = var.vpc_cidr
+  azs = var.azs
+  public_subnet_cidrs = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
-  enable_nat           = var.enable_nat
+  enable_nat = var.enable_nat
 }
 
 module "security" {
@@ -21,23 +27,19 @@ module "security" {
   vpc_id = module.network.vpc_id
 }
 
-module "kms_secrets" {
-  source      = "../../modules/kms_secrets"
-  name_prefix = "assignment2"
+module "database_ec2" {
+  source = "../../modules/database_ec2"
+  vpc_id = module.network.vpc_id
+  private_subnet_id = module.network.private_subnets[0]
+  db_sg_id = module.security.db_sg_id
+  sql_password = random_password.sql_password.result
 }
 
-module "database" {
-  source             = "../../modules/database"
-  engine             = "postgres"
-  engine_version     = "13.7"
-  instance_class     = "db.t3.micro"
-  allocated_storage  = 20
-  db_name            = "electricitybilling"
-  db_username        = "dbadmin"
-  vpc_id             = module.network.vpc_id
-  private_subnet_ids = module.network.private_subnets
-  db_sg_id           = module.security.db_sg_id
-  kms_key_id         = module.kms_secrets.kms_key_id
-  master_password    = module.kms_secrets.db_master_password
-  multi_az           = false
+output "sql_server_private_ip" {
+  value = module.database_ec2.sql_server_private_ip
+}
+
+output "sql_password" {
+  value     = random_password.sql_password.result
+  sensitive = true
 }

@@ -13,7 +13,6 @@ resource "aws_db_instance" "this" {
   allocated_storage  = var.allocated_storage
   db_subnet_group_name = aws_db_subnet_group.this.name
   vpc_security_group_ids = [var.db_sg_id]
-  db_name            = var.db_name
   username           = var.db_username
   password           = var.master_password
   publicly_accessible = false
@@ -24,5 +23,6 @@ resource "aws_db_instance" "this" {
   backup_retention_period = 7
   apply_immediately = true
   multi_az = var.multi_az
+  license_model = var.engine == "sqlserver-se" ? "license-included" : null
   tags = { Name = "iac-rds" }
 }
