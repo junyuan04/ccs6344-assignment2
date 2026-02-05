@@ -1,70 +1,60 @@
-const sql = require("pg");
+// src/config/db.js  (PostgreSQL version using pg Pool)
+const { Pool } = require("pg");
 
-let pool; // Singleton pool instance
+let pool; // singleton
 
 function buildConfig() {
-    return {
-        server: process.env.DB_SERVER,
-        database: process.env.DB_DATABASE,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        options: {
-            encrypt: String(process.env.DB_ENCRYPT).toLowerCase() === "true",
-            trustServerCertificate: String(process.env.DB_TRUST_CERT).toLowerCase() === "true",
-        },
-        pool: {
-            max: 10,
-            min: 0,
-            idleTimeoutMillis: 30000,
-        },
-    };
+  // Support both styles:
+  // 1) DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASSWORD
+  // 2) DB_SERVER/DB_DATABASE (your old naming)
+  const host = process.env.DB_HOST || process.env.DB_SERVER;
+  const port = Number(process.env.DB_PORT || 5432);
+  const database = process.env.DB_NAME || process.env.DB_DATABASE;
+  const user = process.env.DB_USER;
+  const password = process.env.DB_PASSWORD;
+
+  if (!host || !database || !user || !password) {
+    throw new Error(
+      "Missing DB env vars. Need DB_HOST(or DB_SERVER), DB_NAME(or DB_DATABASE), DB_USER, DB_PASSWORD."
+    );
+  }
+
+  return {
+    host,
+    port,
+    database,
+    user,
+    password,
+    // RDS usually requires SSL; in sandbox you may use rejectUnauthorized=false
+    ssl:
+      String(process.env.DB_SSL || "true").toLowerCase() === "true"
+        ? { rejectUnauthorized: false }
+        : false,
+    max: 10,
+    idleTimeoutMillis: 30000,
+  };
 }
 
 async function getPool() {
-    if (pool) return pool;
-    const config = buildConfig();
-    pool = await sql.connect(config);
-    return pool;
+  if (pool) return pool;
+  const config = buildConfig();
+  pool = new Pool(config);
+
+  // test connection once
+  await pool.query("SELECT 1");
+  return pool;
 }
 
 async function query(text, params = []) {
-    const p = await getPool();
-    const request = p.request();
-
-    // params: [{ name, type, value }]
-    for (const param of params) {
-        request.input(param.name, param.type, param.value);
-    }
-
-    const result = await request.query(text);
-    return result;
+  const p = await getPool();
+  return p.query(text, params);
 }
 
+// Keep API for compatibility; if you still have RLS logic later,
+// implement via SET LOCAL or application logic (Postgres differs from MSSQL)
 async function queryWithRlsContext(sqlText, params = [], ctx = {}) {
-    const pool = await getPool();
-    const request = pool.request();
-
-    // normal params
-    params.forEach((p) => request.input(p.name, p.type, p.value));
-
-    // ctx params (use unique names to avoid collision)
-    request.input("__ctxRole", sql.NVarChar(20), ctx.role ?? null);
-    request.input("__ctxCustomerId", sql.Int, ctx.customerId ?? null);
-    request.input("__ctxProfileId", sql.Int, ctx.profileId ?? null);
-
-    const batch = `
-    EXEC sys.sp_set_session_context @key=N'Role',       @value=@__ctxRole;
-    EXEC sys.sp_set_session_context @key=N'Customer_ID',@value=@__ctxCustomerId;
-    EXEC sys.sp_set_session_context @key=N'Profile_ID', @value=@__ctxProfileId;
-
-    ${sqlText}
-
-    EXEC sys.sp_set_session_context @key=N'Role',       @value=NULL;
-    EXEC sys.sp_set_session_context @key=N'Customer_ID',@value=NULL;
-    EXEC sys.sp_set_session_context @key=N'Profile_ID', @value=NULL;
-  `;
-
-    return request.query(batch);
+  // Minimal no-op wrapper for now
+  return query(sqlText, params);
 }
 
-module.exports = { sql, getPool, query, queryWithRlsContext };
+module.exports = { getPool, query, queryWithRlsContext };
