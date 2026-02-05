@@ -1,0 +1,100 @@
+{
+  "alb_sg_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "sg-0d05c3ce321d7b1f0"
+  },
+  "app_sg_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "sg-0d6db97f252093840"
+  },
+  "db_host_param": {
+    "sensitive": false,
+    "type": "string",
+    "value": "/assignment2/database/host"
+  },
+  "db_name_param": {
+    "sensitive": false,
+    "type": "string",
+    "value": "/assignment2/database/name"
+  },
+  "db_password": {
+    "sensitive": true,
+    "type": "string",
+    "value": "!59xkwUuVGnDzlyb"
+  },
+  "db_password_param": {
+    "sensitive": false,
+    "type": "string",
+    "value": "/assignment2/database/password"
+  },
+  "db_port_param": {
+    "sensitive": false,
+    "type": "string",
+    "value": "/assignment2/database/port"
+  },
+  "db_sg_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "sg-0d41d364ffaa02c72"
+  },
+  "db_username_param": {
+    "sensitive": false,
+    "type": "string",
+    "value": "/assignment2/database/username"
+  },
+  "jwt_secret_param": {
+    "sensitive": false,
+    "type": "string",
+    "value": "/assignment2/app/jwt-secret"
+  },
+  "private_subnets": {
+    "sensitive": false,
+    "type": [
+      "tuple",
+      [
+        "string",
+        "string"
+      ]
+    ],
+    "value": [
+      "subnet-0b510eb82e957b545",
+      "subnet-033a8264cb2c5d901"
+    ]
+  },
+  "public_subnets": {
+    "sensitive": false,
+    "type": [
+      "tuple",
+      [
+        "string",
+        "string"
+      ]
+    ],
+    "value": [
+      "subnet-0f334077bcba9fe20",
+      "subnet-06a2d31723ae9a28c"
+    ]
+  },
+  "rds_address": {
+    "sensitive": false,
+    "type": "string",
+    "value": "app-database.cdzfgknu2gha.us-east-1.rds.amazonaws.com"
+  },
+  "rds_endpoint": {
+    "sensitive": false,
+    "type": "string",
+    "value": "app-database.cdzfgknu2gha.us-east-1.rds.amazonaws.com:5432"
+  },
+  "rds_port": {
+    "sensitive": false,
+    "type": "number",
+    "value": 5432
+  },
+  "vpc_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "vpc-0b422687a16b17d3f"
+  }
+}

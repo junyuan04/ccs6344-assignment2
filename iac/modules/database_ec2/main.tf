@@ -22,6 +22,8 @@ resource "aws_instance" "sql_server" {
   vpc_security_group_ids = [var.db_sg_id]
   
   iam_instance_profile = "LabInstanceProfile"
+  
+  # Removed root_block_device - use AMI defaults to avoid permission issues
 
   user_data = <<-EOT
     <powershell>
@@ -49,8 +51,4 @@ resource "aws_instance" "sql_server" {
     New-NetFirewallRule -DisplayName "SQL Server" -Direction Inbound -LocalPort 1433 -Protocol TCP -Action Allow
     </powershell>
   EOT
-
-  tags = {
-    Name = "sql-server-instance"
-  }
 }

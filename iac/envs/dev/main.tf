@@ -5,14 +5,16 @@ terraform {
   }
 }
 
-provider "aws" { region = var.region }
+provider "aws" { region = "us-east-1" }
 
-resource "random_password" "sql_password" {
+# Random password for DB
+resource "random_password" "db_password" {
   length  = 16
   special = true
-  override_special = "!@#$%^&*()-_=+[]{}|:,.<>?"
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
+# Network Module
 module "network" {
   source = "../../modules/network"
   vpc_cidr = var.vpc_cidr
@@ -22,24 +24,77 @@ module "network" {
   enable_nat = var.enable_nat
 }
 
+# Security Groups Module
 module "security" {
   source = "../../modules/security"
   vpc_id = module.network.vpc_id
 }
 
-module "database_ec2" {
-  source = "../../modules/database_ec2"
-  vpc_id = module.network.vpc_id
-  private_subnet_id = module.network.private_subnets[0]
-  db_sg_id = module.security.db_sg_id
-  sql_password = random_password.sql_password.result
+# Database Subnet Group
+resource "aws_db_subnet_group" "this" {
+  name       = "db-subnet-group"
+  subnet_ids = module.network.private_subnets
 }
 
-output "sql_server_private_ip" {
-  value = module.database_ec2.sql_server_private_ip
+# RDS Instance (AWS-managed encryption)
+resource "aws_db_instance" "postgres" {
+  identifier           = "app-database"
+  engine               = "postgres"
+  engine_version       = "16.11"
+  instance_class       = "db.t3.micro"
+  allocated_storage    = 20
+  storage_type         = "gp2"
+  
+  db_name  = "appdb"
+  username = "dbadmin"
+  password = random_password.db_password.result
+  
+  db_subnet_group_name   = aws_db_subnet_group.this.name
+  vpc_security_group_ids = [module.security.db_sg_id]
+  
+  publicly_accessible = false
+  skip_final_snapshot = true
+  
+  # AWS-managed encryption
+  storage_encrypted = true
+  
+  multi_az = false
+  backup_retention_period = 7
+  apply_immediately = true
 }
 
-output "sql_password" {
-  value     = random_password.sql_password.result
-  sensitive = true
+# SSM Parameter Store Module (stores credentials securely)
+module "ssm_params" {
+  source = "../../modules/ssm_params"
+  
+  name_prefix = "assignment2"
+  db_password = random_password.db_password.result
+  db_host     = aws_db_instance.postgres.address
+  db_port     = aws_db_instance.postgres.port
+  db_name     = "appdb"
+}
+
+# Outputs
+output "vpc_id" { value = module.network.vpc_id }
+output "public_subnets" { value = module.network.public_subnets }
+output "private_subnets" { value = module.network.private_subnets }
+output "alb_sg_id" { value = module.security.alb_sg_id }
+output "app_sg_id" { value = module.security.app_sg_id }
+output "db_sg_id" { value = module.security.db_sg_id }
+output "rds_endpoint" { value = aws_db_instance.postgres.endpoint }
+output "rds_address" { value = aws_db_instance.postgres.address }
+output "rds_port" { value = aws_db_instance.postgres.port }
+
+# SSM Parameter names (for Person B to use)
+output "db_username_param" { value = module.ssm_params.db_username_param }
+output "db_password_param" { value = module.ssm_params.db_password_param }
+output "db_host_param" { value = module.ssm_params.db_host_param }
+output "db_port_param" { value = module.ssm_params.db_port_param }
+output "db_name_param" { value = module.ssm_params.db_name_param }
+output "jwt_secret_param" { value = module.ssm_params.jwt_secret_param }
+
+# Sensitive outputs
+output "db_password" { 
+  value     = random_password.db_password.result
+  sensitive = true 
 }

@@ -17,12 +17,10 @@ resource "aws_security_group" "alb_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  tags = { Name = var.alb_sg_name }
 }
 
 resource "aws_security_group" "app_sg" {
-  name   = "app-security-group-v2"
+  name   = var.app_sg_name
   vpc_id = var.vpc_id
   description = "App SG - allow traffic from ALB"
 
@@ -31,7 +29,7 @@ resource "aws_security_group" "app_sg" {
     to_port         = 3000
     protocol        = "tcp"
     security_groups = [aws_security_group.alb_sg.id]
-    description     = "Allow ALB to Node.js"
+    description     = "Allow ALB"
   }
 
   egress {
@@ -40,21 +38,19 @@ resource "aws_security_group" "app_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  tags = { Name = "app-security-group-v2" }
 }
 
 resource "aws_security_group" "db_sg" {
   name   = var.db_sg_name
   vpc_id = var.vpc_id
-  description = "DB SG - allow 1433 from App"
+  description = "DB SG - allow 5432 from App"
 
   ingress {
-    from_port       = 1433
-    to_port         = 1433
+    from_port       = 5432
+    to_port         = 5432
     protocol        = "tcp"
     security_groups = [aws_security_group.app_sg.id]
-    description     = "Allow app servers to SQL Server"
+    description     = "Allow app to PostgreSQL"
   }
 
   egress {
@@ -63,6 +59,4 @@ resource "aws_security_group" "db_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  tags = { Name = var.db_sg_name }
 }
