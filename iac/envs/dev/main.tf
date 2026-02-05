@@ -97,8 +97,9 @@ module "observability" {
 }
 
 module "waf" {
-  source  = "../../modules/waf"
-  alb_arn = module.edge.alb_arn
+  source      = "../../modules/waf"
+  alb_arn     = module.edge.alb_arn
+  name_prefix = "assignment2"
 }
 
 
