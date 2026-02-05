@@ -11,14 +11,6 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
-    description = "HTTP"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -26,6 +18,7 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  tags = { Name = var.alb_sg_name }
 }
 
 resource "aws_security_group" "app_sg" {
@@ -48,6 +41,7 @@ resource "aws_security_group" "app_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  tags = { Name = var.app_sg_name }
 }
 
 resource "aws_security_group" "db_sg" {
@@ -70,4 +64,5 @@ resource "aws_security_group" "db_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  tags = { Name = var.db_sg_name }
 }

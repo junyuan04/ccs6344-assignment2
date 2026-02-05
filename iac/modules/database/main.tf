@@ -1,6 +1,8 @@
+# DB subnet group
 resource "aws_db_subnet_group" "this" {
   name       = "iac-db-subnet-group"
   subnet_ids = var.private_subnet_ids
+  tags = { Name = "iac-db-subnet-group" }
 }
 
 resource "aws_db_instance" "this" {
@@ -22,4 +24,5 @@ resource "aws_db_instance" "this" {
   backup_retention_period = 7
   apply_immediately = true
   multi_az = var.multi_az
+  tags = { Name = "iac-rds" }
 }

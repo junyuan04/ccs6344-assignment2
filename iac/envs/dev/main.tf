@@ -41,32 +41,3 @@ module "database" {
   master_password    = module.kms_secrets.db_master_password
   multi_az           = false
 }
-
-module "edge" {
-  source = "../../modules/edge"
-
-  name_prefix    = var.name_prefix
-  vpc_id         = module.network.vpc_id
-  public_subnets = module.network.public_subnets
-  alb_sg_id      = module.security.alb_sg_id
-
-  target_port       = 5000
-  health_check_path = "/api/health"
-
-  enable_https    = false
-  certificate_arn = ""
-}
-
-module "compute" {
-  source = "../../modules/compute"
-
-  name_prefix      = var.name_prefix
-  public_subnets   = module.network.public_subnets
-  app_sg_id        = module.security.app_sg_id
-  target_group_arn = module.edge.target_group_arn
-
-  backend_dir = "Database-Assignment1-Backend-master/Database-Assignment1-Backend-master"
-  app_port    = 5000
-
-  key_name = ""
-}

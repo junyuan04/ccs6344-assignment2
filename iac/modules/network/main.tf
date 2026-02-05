@@ -6,6 +6,7 @@ resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
+  tags = { Name = "iac-vpc" }
 }
 
 resource "aws_internet_gateway" "igw" {
@@ -20,6 +21,7 @@ resource "aws_subnet" "public" {
   cidr_block        = var.public_subnet_cidrs[tonumber(each.key)]
   availability_zone = each.value
   map_public_ip_on_launch = true
+  tags = { Name = "public-${each.value}" }
 }
 
 # create private subnets (one per AZ)
@@ -29,6 +31,7 @@ resource "aws_subnet" "private" {
   cidr_block        = var.private_subnet_cidrs[tonumber(each.key)]
   availability_zone = each.value
   map_public_ip_on_launch = false
+  tags = { Name = "private-${each.value}" }
 }
 
 # public route table + route to IGW
@@ -65,6 +68,7 @@ resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat_eip[0].id
   subnet_id     = local.public_subnet_ids[0]
   depends_on = [aws_internet_gateway.igw]
+  tags = { Name = "iac-nat" }
 }
 
 # private route table that points to NAT (for internet egress)
