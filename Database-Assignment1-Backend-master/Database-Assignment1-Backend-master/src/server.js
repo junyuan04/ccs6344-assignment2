@@ -6,7 +6,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // Import all routes
 const authRoutes = require('./routes/auth');
@@ -32,6 +32,8 @@ app.get('/', (req, res) => {
   res.json({
     message: 'Electricity Billing System API is running!',
     endpoints: {
+      health: "/api/health",
+      dbtest: "/api/dbtest",
       auth: '/api/auth',
       bills: '/api/bills',
       users: '/api/users'
@@ -63,10 +65,9 @@ app.get("/api/health", async (req, res) => {
   }
 });
 
-
 app.get("/api/dbtest", async (req, res) => {
   try {
-    const result = await query("SELECT current_database() AS dbname, NOW() AS now");
+    const result = await query("SELECT current_database() AS dbname, now() AS now");
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
