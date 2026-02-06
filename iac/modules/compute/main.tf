@@ -60,16 +60,16 @@ resource "aws_instance" "app" {
     cd /home/ec2-user/apprepo/${var.backend_dir}
 
     # create .env
-    cat > .env <<EOT
-    PORT=${var.app_port}
-    JWT_SECRET=change-this-to-a-long-random-string
-    DB_SERVER=localhost
-    DB_DATABASE=ElectricityBillingDB
-    DB_USER=
-    DB_PASSWORD=
-    DB_ENCRYPT=false
-    DB_TRUST_CERT=true
-    EOT
+    cat > .env <<'EOF'
+    PORT=5000
+    DB_HOST=${DB_HOST_FROM_SSM}
+    DB_PORT=${DB_PORT_FROM_SSM}
+    DB_NAME=${DB_NAME_FROM_SSM}
+    DB_USER=${DB_USER_FROM_SSM}
+    DB_PASSWORD=${DB_PASSWORD_FROM_SSM}
+    DB_SSL=true
+    JWT_SECRET=${JWT_FROM_SSM}
+    EOF
 
     npm ci || npm install
 
