@@ -20,41 +20,60 @@ resource "aws_instance" "app" {
 
   user_data = <<-USERDATA
     #!/bin/bash
-    set -euxo pipefail
+set -euxo pipefail
 
-    yum update -y
-    yum install -y git
+yum update -y
+yum install -y git
 
-    # install Node.js 18
-    curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
-    yum install -y nodejs
+# Node.js 20
+curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
+yum install -y nodejs
 
-    cd /home/ec2-user
-    rm -rf apprepo
-    git clone https://github.com/junyuan04/ccs6344-assignment2 apprepo
+APP_DIR="/home/ec2-user/apprepo"
+BACKEND_DIR="Database-Assignment1-Backend-master/Database-Assignment1-Backend-master"  # <<< 改这里（server.js 所在目录）
 
-    cd /home/ec2-user/apprepo/${var.backend_dir}
+rm -rf "$APP_DIR"
+git clone https://github.com/junyuan04/ccs6344-assignment2 "$APP_DIR"
 
-    # create .env
-    cat > .env <<'ENVEOF'
-    PORT=${var.app_port}
-    DB_HOST=${var.db_host}
-    DB_PORT=${var.db_port}
-    DB_NAME=${var.db_name}
-    DB_USER=${var.db_user}
-    DB_PASSWORD=${var.db_password}
-    JWT_SECRET=${var.jwt_secret}
-    ENVEOF
+cd "$APP_DIR/$BACKEND_DIR"
+npm ci || npm install
 
-    cd /home/ec2-user/apprepo/Database-Assignment1-Backend-master/Database-Assignment1-Backend-master
-    
-    npm ci || npm install
+cat > /etc/ebs-backend.env <<EOF
+PORT=${var.app_port}
+DB_HOST=${var.db_host}
+DB_PORT=${var.db_port}
+DB_NAME=${var.db_name}
+DB_USER=${var.db_user}
+DB_PASSWORD=${var.db_password}
+JWT_SECRET=${var.jwt_secret}
+EOF
 
-    # use nohup launch
-    nohup node server.js > /var/log/app.log 2>&1 &
+# systemd service
+cat > /etc/systemd/system/ebs-backend.service <<'SERVICE'
+[Unit]
+Description=EBS Backend
+After=network.target
 
-    sleep 5
-    ss -lntp | grep :${var.app_port} || (echo "PORT NOT LISTENING"; tail -n 120 /var/log/app.log || true)
+[Service]
+Type=simple
+WorkingDirectory=/home/ec2-user/apprepo/Database-Assignment1-Backend-master/Database-Assignment1-Backend-master
+EnvironmentFile=/etc/ebs-backend.env
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=3
+User=ec2-user
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+
+systemctl daemon-reload
+systemctl enable --now ebs-backend
+
+sleep 3
+systemctl status ebs-backend --no-pager -l
+ss -lntp | grep :${var.app_port} || true
+curl -i http://127.0.0.1:${var.app_port}/api/health || true
 USERDATA
 
   tags = {
