@@ -8,77 +8,47 @@ data "aws_ami" "al2023" {
   }
 }
 
-#resource "aws_iam_role" "ec2_role" {
-#  name = "${var.name_prefix}-ec2-role"
-#
-#  assume_role_policy = jsonencode({
-#    Version = "2012-10-17",
-#    Statement = [{
-#      Effect = "Allow",
-#      Principal = { Service = "ec2.amazonaws.com" },
-#      Action = "sts:AssumeRole"
-#    }]
-#  })
-#}
-
-#resource "aws_iam_role_policy_attachment" "ssm" {
-#  role       = aws_iam_role.ec2_role.name
-#  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-#}
-
-#resource "aws_iam_instance_profile" "profile" {
-# name = "${var.name_prefix}-ec2-profile"
-#  role = aws_iam_role.ec2_role.name
-#}
-
 resource "aws_instance" "app" {
   ami                    = data.aws_ami.al2023.id
   instance_type          = "t3.micro"
   subnet_id              = var.public_subnets[0]
   vpc_security_group_ids = [var.app_sg_id]
 
-#  iam_instance_profile = aws_iam_instance_profile.profile.name
+  key_name = "assignment2-key"
 
+  user_data = <<-USERDATA
+#!/bin/bash
+exec > /var/log/user-data.log 2>&1
+set -ex
 
-  key_name = var.key_name != "" ? var.key_name : null
+yum update -y
+yum install -y git
 
-  user_data = <<-EOF
-    #!/bin/bash
-    set -euxo pipefail
+curl -fsSL https://rpm.nodesource.com/setup_18.x | bash -
+yum install -y nodejs
 
-    yum update -y
-    yum install -y git
+cd /home/ec2-user
+rm -rf apprepo
+git clone https://github.com/junyuan04/ccs6344-assignment2.git apprepo
 
-    # install Node.js 18
-    curl -fsSL https://rpm.nodesource.com/setup_18.x | bash -
-    yum install -y nodejs
+cd /home/ec2-user/apprepo/${var.backend_dir}
 
-    cd /home/ec2-user
-    rm -rf apprepo
-    git clone https://github.com/junyuan04/ccs6344-assignment2.git apprepo
+echo "PORT=${var.app_port}" > .env
+echo "JWT_SECRET=${var.jwt_secret}" >> .env
+echo "DB_HOST=${var.db_host}" >> .env
+echo "DB_PORT=${var.db_port}" >> .env
+echo "DB_NAME=${var.db_name}" >> .env
+echo "DB_USER=${var.db_username}" >> .env
+echo "DB_PASSWORD=${var.db_password}" >> .env
+echo "DB_SSL=true" >> .env
 
-    cd /home/ec2-user/apprepo/${var.backend_dir}
+npm ci || npm install
 
-    # create .env
-    cat > .env <<EOT
-    PORT=${var.app_port}
-    JWT_SECRET=change-this-to-a-long-random-string
-    DB_SERVER=localhost
-    DB_DATABASE=ElectricityBillingDB
-    DB_USER=
-    DB_PASSWORD=
-    DB_ENCRYPT=false
-    DB_TRUST_CERT=true
-    EOT
+nohup node src/server.js > /var/log/app.log 2>&1 &
 
-    npm ci || npm install
-
-    # use nohup launch
-    nohup node src/server.js > /var/log/app.log 2>&1 &
-
-    sleep 5
-    ss -lntp | grep :${var.app_port} || true
-  EOF
+sleep 5
+ss -lntp | grep :${var.app_port} || echo "Port not listening yet"
+USERDATA
 
   tags = {
     Name = "${var.name_prefix}-app"
