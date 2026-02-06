@@ -50,7 +50,7 @@ resource "aws_instance" "app" {
     yum install -y git
 
     # install Node.js 18
-    curl -fsSL https://rpm.nodesource.com/setup_18.x | bash -
+    curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
     yum install -y nodejs
 
     cd /home/ec2-user
