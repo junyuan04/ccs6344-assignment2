@@ -84,7 +84,10 @@ app.use(errorHandler);
       console.log(`Server is running on http://localhost:${PORT}`);
     });
   } catch (err) {
-    console.error("DB connection failed:", err.message);
-    process.exit(1);
+    pool.connect()
+      .then(() => console.log("Connected to PostgreSQL"))
+      .catch((err) => {
+        console.error("DB connection failed:", err.message);
+      });
   }
 })();
