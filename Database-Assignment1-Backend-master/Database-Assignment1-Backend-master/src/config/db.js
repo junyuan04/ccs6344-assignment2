@@ -1,59 +1,65 @@
-// src/db.js (PostgreSQL version)
 const { Pool } = require("pg");
 
 let pool;
 
 function getPool() {
   if (!pool) {
+    const {
+      DB_HOST,
+      DB_PORT,
+      DB_NAME,
+      DB_USER,
+      DB_PASSWORD,
+    } = process.env;
+
+    if (!DB_HOST || !DB_PORT || !DB_NAME || !DB_USER || !DB_PASSWORD) {
+      throw new Error(
+        "Missing DB env vars. Need DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD"
+      );
+    }
+
     pool = new Pool({
-      host: process.env.PGHOST || process.env.DB_HOST,
-      port: Number(process.env.PGPORT || process.env.DB_PORT || 5432),
-      database: process.env.PGDATABASE || process.env.DB_NAME,
-      user: process.env.PGUSER || process.env.DB_USER,
-      password: process.env.PGPASSWORD || process.env.DB_PASSWORD,
-      ssl:
-        (process.env.PGSSL || process.env.DB_SSL) === "true"
-          ? { rejectUnauthorized: false }
-          : undefined,
+      host: DB_HOST,
+      port: Number(DB_PORT),
+      database: DB_NAME,
+      user: DB_USER,
+      password: DB_PASSWORD,
+
+      ssl: { rejectUnauthorized: false },
       max: 10,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000,
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 10_000,
     });
   }
   return pool;
 }
 
-async function testConnection() {
+async function query(text, params = []) {
   const p = getPool();
-  const r = await p.query("SELECT 1 as ok");
-  return r.rows?.[0]?.ok === 1;
+  const res = await p.query(text, params);
+  return res;
 }
 
-/**
- * Optional: If you still want “RLS-like context”, you can store variables
- * and reference them in policies via current_setting('app.user_id', true).
- */
-async function queryWithRlsContext(sqlText, params, context = {}) {
+async function queryWithRlsContext(text, params = [], ctx = {}) {
   const p = getPool();
   const client = await p.connect();
   try {
     await client.query("BEGIN");
 
-    // set_config(key, value, is_local)
-    if (context.user_id != null) {
+    if (ctx.user_id != null) {
       await client.query("SELECT set_config('app.user_id', $1, true)", [
-        String(context.user_id),
+        String(ctx.user_id),
       ]);
     }
-    if (context.role != null) {
+    if (ctx.role != null) {
       await client.query("SELECT set_config('app.role', $1, true)", [
-        String(context.role),
+        String(ctx.role),
       ]);
     }
 
-    const result = await client.query(sqlText, params);
+    const res = await client.query(text, params);
     await client.query("COMMIT");
-    return result;
+    return res;
   } catch (e) {
     await client.query("ROLLBACK");
     throw e;
@@ -62,4 +68,4 @@ async function queryWithRlsContext(sqlText, params, context = {}) {
   }
 }
 
-module.exports = { getPool, testConnection, queryWithRlsContext };
+module.exports = { getPool, query, queryWithRlsContext };
