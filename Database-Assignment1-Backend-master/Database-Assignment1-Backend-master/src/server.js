@@ -58,8 +58,7 @@ app.use("/api/auditlogs", auditLogsRoutes);
 // Health check endpoint
 app.get("/api/health", async (req, res) => {
   try {
-    await getPool();
-    res.json({ ok: true, db: "connected" });
+    res.status(200).json({ status: "ok" });
   } catch (err) {
     res.status(500).json({ ok: false, db: "failed", error: err.message });
   }

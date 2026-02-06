@@ -44,20 +44,20 @@ resource "aws_instance" "app" {
 
   user_data = <<-EOF
     #!/bin/bash
-    set -euxo pipefail
+    set -e
 
     yum update -y
     yum install -y git
 
     # install Node.js 18
-    curl -fsSL https://rpm.nodesource.com/setup_18.x | bash -
+    curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
     yum install -y nodejs
 
     cd /home/ec2-user
     rm -rf apprepo
     git clone https://github.com/junyuan04/ccs6344-assignment2 apprepo
 
-    cd /home/ec2-user/apprepo/${var.backend_dir}
+    cd /home/ec2-user/apprepo/Database-Assignment1-Backend-master/Database-Assignment1-Backend-master
 
     # create .env
     cat > .env <<'EOF'
