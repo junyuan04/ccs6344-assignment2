@@ -42,25 +42,25 @@ resource "aws_instance" "app" {
 
   key_name = var.key_name != "" ? var.key_name : null
 
-  user_data = <<-EOF
+  user_data = <<-USERDATA
     #!/bin/bash
-    set -e
+    set -euxo pipefail
 
     yum update -y
     yum install -y git
 
     # install Node.js 18
-    curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
+    curl -fsSL https://rpm.nodesource.com/setup_18.x | bash -
     yum install -y nodejs
 
     cd /home/ec2-user
     rm -rf apprepo
     git clone https://github.com/junyuan04/ccs6344-assignment2 apprepo
 
-    cd /home/ec2-user/apprepo/Database-Assignment1-Backend-master/Database-Assignment1-Backend-master
+    cd /home/ec2-user/apprepo/${var.backend_dir}
 
     # create .env
-    cat > .env <<'EOF'
+    cat > .env <<'ENVEOF'
     PORT=5000
     DB_HOST=${DB_HOST_FROM_SSM}
     DB_PORT=${DB_PORT_FROM_SSM}
@@ -69,7 +69,7 @@ resource "aws_instance" "app" {
     DB_PASSWORD=${DB_PASSWORD_FROM_SSM}
     DB_SSL=true
     JWT_SECRET=${JWT_FROM_SSM}
-    EOF
+    ENVEOF
 
     npm ci || npm install
 
@@ -78,7 +78,7 @@ resource "aws_instance" "app" {
 
     sleep 5
     ss -lntp | grep :${var.app_port} || true
-  EOF
+USERDATA
 
   tags = {
     Name = "${var.name_prefix}-app"
