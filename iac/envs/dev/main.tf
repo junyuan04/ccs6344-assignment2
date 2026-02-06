@@ -88,7 +88,16 @@ module "compute" {
   name_prefix      = "assignment2"
   public_subnets   = module.network.public_subnets
   app_sg_id        = module.security.app_sg_id
+  subnet_id          = module.network.public_subnets[0]
+  security_group_id  = module.security.app_sg_id
   target_group_arn = module.edge.target_group_arn
+
+  db_host     = aws_db_instance.postgres.address
+  db_port     = tostring(aws_db_instance.postgres.port)
+  db_name     = aws_db_instance.postgres.db_name
+  db_user     = aws_db_instance.postgres.username
+  db_password = random_password.db_password.result
+  jwt_secret  = module.ssm_params.jwt_secret_value
 
   backend_dir = "Database-Assignment1-Backend-master/Database-Assignment1-Backend-master"
 

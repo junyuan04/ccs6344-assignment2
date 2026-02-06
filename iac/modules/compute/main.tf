@@ -8,63 +8,12 @@ data "aws_ami" "al2023" {
   }
 }
 
-resource "aws_iam_role" "ec2_role" {
-  name = "assignment2-ec2-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Action = "sts:AssumeRole",
-      Effect = "Allow",
-      Principal = { Service = "ec2.amazonaws.com" }
-    }]
-  })
-}
-
-resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "assignment2-ec2-profile"
-  role = aws_iam_role.ec2_role.name
-}
-
-# allow SSM agent basic + instance managed
-resource "aws_iam_role_policy_attachment" "ssm_core" {
-  role       = aws_iam_role.ec2_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
-
-# allow reading your parameter store values
-resource "aws_iam_policy" "ssm_read_params" {
-  name = "assignment2-ssm-read-params"
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = ["ssm:GetParameter", "ssm:GetParameters", "ssm:GetParametersByPath"],
-        Resource = "arn:aws:ssm:us-east-1:374832594034:parameter/assignment2/*"
-      },
-      {
-        Effect = "Allow",
-        Action = ["kms:Decrypt"],
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "ssm_read_attach" {
-  role       = aws_iam_role.ec2_role.name
-  policy_arn = aws_iam_policy.ssm_read_params.arn
-}
 
 resource "aws_instance" "app" {
   ami                    = data.aws_ami.al2023.id
   instance_type          = "t3.micro"
   subnet_id              = var.public_subnets[0]
   vpc_security_group_ids = [var.app_sg_id]
-
-  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
 
 
   key_name = var.key_name != "" ? var.key_name : null
@@ -97,6 +46,8 @@ resource "aws_instance" "app" {
     JWT_SECRET=${var.jwt_secret}
     ENVEOF
 
+    cd /home/ec2-user/apprepo/Database-Assignment1-Backend-master/Database-Assignment1-Backend-master
+    
     npm ci || npm install
 
     # use nohup launch
