@@ -88,23 +88,22 @@ resource "aws_instance" "app" {
 
     # create .env
     cat > .env <<'ENVEOF'
-    PORT=5000
-    DB_HOST=$${DB_HOST_FROM_SSM}
-    DB_PORT=$${DB_PORT_FROM_SSM}
-    DB_NAME=$${DB_NAME_FROM_SSM}
-    DB_USER=$${DB_USER_FROM_SSM}
-    DB_PASSWORD=$${DB_PASSWORD_FROM_SSM}
-    DB_SSL=true
-    JWT_SECRET=$${JWT_FROM_SSM}
+    PORT=${var.app_port}
+    DB_HOST=${var.db_host}
+    DB_PORT=${var.db_port}
+    DB_NAME=${var.db_name}
+    DB_USER=${var.db_user}
+    DB_PASSWORD=${var.db_password}
+    JWT_SECRET=${var.jwt_secret}
     ENVEOF
 
     npm ci || npm install
 
     # use nohup launch
-    nohup node src/server.js > /var/log/app.log 2>&1 &
+    nohup node server.js > /var/log/app.log 2>&1 &
 
     sleep 5
-    ss -lntp | grep :${var.app_port} || true
+    ss -lntp | grep :${var.app_port} || (echo "PORT NOT LISTENING"; tail -n 120 /var/log/app.log || true)
 USERDATA
 
   tags = {
