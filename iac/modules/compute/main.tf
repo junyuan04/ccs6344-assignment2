@@ -62,13 +62,13 @@ resource "aws_instance" "app" {
     # create .env
     cat > .env <<'ENVEOF'
     PORT=5000
-    DB_HOST=${DB_HOST_FROM_SSM}
-    DB_PORT=${DB_PORT_FROM_SSM}
-    DB_NAME=${DB_NAME_FROM_SSM}
-    DB_USER=${DB_USER_FROM_SSM}
-    DB_PASSWORD=${DB_PASSWORD_FROM_SSM}
+    DB_HOST=$${DB_HOST_FROM_SSM}
+    DB_PORT=$${DB_PORT_FROM_SSM}
+    DB_NAME=$${DB_NAME_FROM_SSM}
+    DB_USER=$${DB_USER_FROM_SSM}
+    DB_PASSWORD=$${DB_PASSWORD_FROM_SSM}
     DB_SSL=true
-    JWT_SECRET=${JWT_FROM_SSM}
+    JWT_SECRET=$${JWT_FROM_SSM}
     ENVEOF
 
     npm ci || npm install
