@@ -55,7 +55,7 @@ resource "aws_instance" "app" {
 
     cd /home/ec2-user
     rm -rf apprepo
-    git clone https://github.com/junyuan04/ccs6344-assignment2.git apprepo
+    git clone https://github.com/junyuan04/ccs6344-assignment2 apprepo
 
     cd /home/ec2-user/apprepo/${var.backend_dir}
 
