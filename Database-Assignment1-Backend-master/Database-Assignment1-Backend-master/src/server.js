@@ -56,12 +56,8 @@ app.use("/api/auditlogs", auditLogsRoutes);
 
 
 // Health check endpoint
-app.get("/api/health", async (req, res) => {
-  try {
-    res.status(200).json({ status: "ok" });
-  } catch (err) {
-    res.status(500).json({ ok: false, db: "failed", error: err.message });
-  }
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ ok: true });
 });
 
 app.get("/api/dbtest", async (req, res) => {
