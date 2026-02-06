@@ -8,74 +8,46 @@ data "aws_ami" "al2023" {
   }
 }
 
-
 resource "aws_instance" "app" {
   ami                    = data.aws_ami.al2023.id
   instance_type          = "t3.micro"
   subnet_id              = var.public_subnets[0]
   vpc_security_group_ids = [var.app_sg_id]
 
-
-  key_name = var.key_name != "" ? var.key_name : null
+  key_name = "assignment2-key"
 
   user_data = <<-USERDATA
-  exec > >(tee /var/log/user-data.log | logger -t user-data -s 2>/dev/console) 2>&1
-set -euxo pipefail
-    #!/bin/bash
-set -euxo pipefail
+#!/bin/bash
+exec > /var/log/user-data.log 2>&1
+set -ex
 
 yum update -y
 yum install -y git
 
-# Node.js 20
-curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
+curl -fsSL https://rpm.nodesource.com/setup_18.x | bash -
 yum install -y nodejs
 
-APP_DIR="/home/ec2-user/apprepo"
-BACKEND_DIR="Database-Assignment1-Backend-master/Database-Assignment1-Backend-master"  # <<< 改这里（server.js 所在目录）
+cd /home/ec2-user
+rm -rf apprepo
+git clone https://github.com/junyuan04/ccs6344-assignment2.git apprepo
 
-rm -rf "$APP_DIR"
-git clone https://github.com/junyuan04/ccs6344-assignment2 "$APP_DIR"
+cd /home/ec2-user/apprepo/${var.backend_dir}
 
-cd "$APP_DIR/$BACKEND_DIR"
+echo "PORT=${var.app_port}" > .env
+echo "JWT_SECRET=${var.jwt_secret}" >> .env
+echo "DB_HOST=${var.db_host}" >> .env
+echo "DB_PORT=${var.db_port}" >> .env
+echo "DB_NAME=${var.db_name}" >> .env
+echo "DB_USER=${var.db_username}" >> .env
+echo "DB_PASSWORD=${var.db_password}" >> .env
+echo "DB_SSL=true" >> .env
+
 npm ci || npm install
 
-cat > .env <<EOT
-PORT=${var.app_port}
-DB_HOST=${var.db_host}
-DB_USER=${var.db_user}
-DB_PASSWORD=${var.db_password}
-DB_NAME=${var.db_name}
-DB_PORT=${var.db_port}
-JWT_SECRET=${var.jwt_secret}
-EOT
+nohup node src/server.js > /var/log/app.log 2>&1 &
 
-# systemd service
-cat > /etc/systemd/system/ebs-backend.service <<'SERVICE'
-[Unit]
-Description=EBS Backend
-After=network.target
-
-[Service]
-Type=simple
-WorkingDirectory=/home/ec2-user/apprepo/Database-Assignment1-Backend-master/Database-Assignment1-Backend-master
-EnvironmentFile=/etc/ebs-backend.env
-ExecStart=/usr/bin/node server.js
-Restart=always
-RestartSec=3
-User=ec2-user
-
-[Install]
-WantedBy=multi-user.target
-SERVICE
-
-systemctl daemon-reload
-systemctl enable --now ebs-backend
-
-sleep 3
-systemctl status ebs-backend --no-pager -l
-ss -lntp | grep :${var.app_port} || true
-curl -i http://127.0.0.1:${var.app_port}/api/health || true
+sleep 5
+ss -lntp | grep :${var.app_port} || echo "Port not listening yet"
 USERDATA
 
   tags = {
