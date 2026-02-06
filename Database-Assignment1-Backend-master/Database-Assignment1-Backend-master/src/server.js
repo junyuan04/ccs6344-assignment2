@@ -75,19 +75,12 @@ app.use((req, res) => {
 
 app.use(errorHandler);
 
-(async () => {
-  try {
-    await getPool();
-    console.log("DB connected");
+// Start server first (so ALB health check can pass even if DB is down)
+app.listen(PORT, () => {
+  console.log(`Server is running on http://0.0.0.0:${PORT}`);
+});
 
-    app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
-    });
-  } catch (err) {
-    pool.connect()
-      .then(() => console.log("Connected to PostgreSQL"))
-      .catch((err) => {
-        console.error("DB connection failed:", err.message);
-      });
-  }
-})();
+// Then try DB connection (non-blocking)
+getPool()
+  .then(() => console.log("DB connected"))
+  .catch((err) => console.error("DB connection failed:", err.message));

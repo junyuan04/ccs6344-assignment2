@@ -19,6 +19,8 @@ resource "aws_instance" "app" {
   key_name = var.key_name != "" ? var.key_name : null
 
   user_data = <<-USERDATA
+  exec > >(tee /var/log/user-data.log | logger -t user-data -s 2>/dev/console) 2>&1
+set -euxo pipefail
     #!/bin/bash
 set -euxo pipefail
 
@@ -38,15 +40,15 @@ git clone https://github.com/junyuan04/ccs6344-assignment2 "$APP_DIR"
 cd "$APP_DIR/$BACKEND_DIR"
 npm ci || npm install
 
-cat > /etc/ebs-backend.env <<EOF
+cat > .env <<EOT
 PORT=${var.app_port}
 DB_HOST=${var.db_host}
-DB_PORT=${var.db_port}
-DB_NAME=${var.db_name}
 DB_USER=${var.db_user}
 DB_PASSWORD=${var.db_password}
+DB_NAME=${var.db_name}
+DB_PORT=${var.db_port}
 JWT_SECRET=${var.jwt_secret}
-EOF
+EOT
 
 # systemd service
 cat > /etc/systemd/system/ebs-backend.service <<'SERVICE'
